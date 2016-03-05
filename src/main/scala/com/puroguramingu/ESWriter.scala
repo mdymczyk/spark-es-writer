@@ -2,15 +2,12 @@ package com.puroguramingu
 
 import com.puroguramingu.dstream.DStreamESWriter
 import com.puroguramingu.rdd.RDDESWriter
+import com.sksamuel.elastic4s.{UpdateDefinition, IndexDefinition}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.DStream
 
 import scala.language.implicitConversions
 import scala.reflect.ClassTag
-
-/**
-  * Created by mateusz on 3/4/16.
-  */
 
 object ESWriter {
   implicit def createESWriter[T: ClassTag](dstream: DStream[T]): ESWriter[T] =
@@ -22,6 +19,7 @@ object ESWriter {
 
 abstract class ESWriter[T: ClassTag] {
 
-  def esForeach[E, R, Q](esKey: ESClientKey, fun: T => E)
+  def esIndex(esKey: ESClientKey, fun: T => IndexDefinition): Unit
 
+  def esUpdate(esKey: ESClientKey, fun: T => UpdateDefinition): Unit
 }

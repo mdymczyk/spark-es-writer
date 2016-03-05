@@ -5,9 +5,6 @@ import org.elasticsearch.common.settings.Settings
 
 import scala.collection.mutable
 
-/**
-  * Created by mateusz on 3/2/16.
-  */
 object ClientCache {
 
   // TODO not sure if this is thread safe, might need to modify it
