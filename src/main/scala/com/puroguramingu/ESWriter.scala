@@ -1,5 +1,7 @@
 package com.puroguramingu
 
+import com.puroguramingu.dstream.DStreamESWriter
+import com.puroguramingu.rdd.RDDESWriter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.streaming.dstream.DStream
 
@@ -20,10 +22,6 @@ object ESWriter {
 
 abstract class ESWriter[T: ClassTag] {
 
-  def filter[E](esKey: ESClientKey, fun: T => E)
-
-  def foreach[E](esKey: ESClientKey, fun: T => E)
-
-  def map[E](esKey: ESClientKey, fun: T => E)
+  def esForeach[E, R, Q](esKey: ESClientKey, fun: T => E)
 
 }

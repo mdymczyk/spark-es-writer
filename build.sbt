@@ -10,12 +10,14 @@ javacOptions ++= Seq("-source", "1.7", "-target", "1.7")
 
 scalacOptions += "-target:jvm-1.7"
 
+val esVersion = "2.2.0"
+
 libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-core" % sparkVersion % "provided",
   "org.apache.spark" %% "spark-sql" % sparkVersion % "provided",
   "org.apache.spark" %% "spark-mllib" % sparkVersion % "provided",
 
-  "com.sksamuel.elastic4s" %% "elastic4s-core" % "2.2.0",
+  "com.sksamuel.elastic4s" %% "elastic4s-core" % esVersion,
 
   // TEST
   "org.scalatest" %% "scalatest" % "2.2.6" % "test"
