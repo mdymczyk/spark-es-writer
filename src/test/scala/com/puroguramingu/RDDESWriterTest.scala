@@ -3,21 +3,22 @@ package com.puroguramingu
 import java.util.concurrent.TimeUnit
 
 import com.puroguramingu.util.WithElasticSearch
+import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.ElasticsearchClientUri
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{FunSuite, Matchers}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
+import com.puroguramingu.ESWriter._
 
 class RDDESWriterTest extends FunSuite with Matchers with WithElasticSearch {
 
   val sc = new SparkContext(new SparkConf().setAppName("Test").setMaster("local[*]"))
+  val esKey: ESClientKey = ESClientKey(Map(), ElasticsearchClientUri("localhost", 9400))
 
-  test("Save new documents") {
-    import com.sksamuel.elastic4s.ElasticDsl._
-    import com.puroguramingu.ESWriter._
-
+  override def beforeAll() = {
+    super.beforeAll()
     client.execute(
       createIndex("bands")
     )
@@ -32,9 +33,13 @@ class RDDESWriterTest extends FunSuite with Matchers with WithElasticSearch {
     ) {
       Thread.sleep(100)
     }
+  }
+
+  test("Save new documents") {
+    import com.sksamuel.elastic4s.ElasticDsl._
 
     sc.parallelize(Array(1, 2, 3)).esIndex(
-      ESClientKey(Map(), ElasticsearchClientUri("localhost", 9400)),
+      esKey,
       (x: Int) => index into "bands" / "artists" fields "val" -> x
     )
 
@@ -48,6 +53,33 @@ class RDDESWriterTest extends FunSuite with Matchers with WithElasticSearch {
     ).getHits.hits().size
 
     assertResult(3)(res)
+  }
+
+  test("Update a documents") {
+    import com.sksamuel.elastic4s.ElasticDsl._
+
+    val id = Await.result(
+      client.execute(
+        index into "bands" / "artists" fields "text_val" -> "test"
+      ),
+      Duration.Inf
+    ).getId
+
+    sc.parallelize(Seq((id, "post_test"))).esUpdate(
+      esKey,
+      (t: (String,String)) => update(t._1).in("bands" / "artists").doc(Map("text_val" -> t._2))
+    )
+
+    Thread.sleep(1000)
+
+    val res = Await.result(
+      client.execute(
+        search("bands" / "artists").query(idsQuery(Seq(id)))
+      ),
+      Duration(1, TimeUnit.MINUTES)
+    ).getHits.hits()(0)
+
+    assertResult("post_test")(res.sourceAsMap().get("text_val"))
   }
 
 }
