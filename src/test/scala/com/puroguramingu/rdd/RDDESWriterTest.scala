@@ -1,8 +1,10 @@
-package com.puroguramingu
+package com.puroguramingu.rdd
 
 import java.util.concurrent.TimeUnit
 
-import com.puroguramingu.util.WithElasticSearch
+import com.puroguramingu.ESClientKey
+import com.puroguramingu.ESWriter._
+import com.puroguramingu.util.ElasticSearch
 import com.sksamuel.elastic4s.ElasticDsl._
 import com.sksamuel.elastic4s.ElasticsearchClientUri
 import org.apache.spark.{SparkConf, SparkContext}
@@ -10,9 +12,8 @@ import org.scalatest.{FunSuite, Matchers}
 
 import scala.concurrent.Await
 import scala.concurrent.duration.Duration
-import com.puroguramingu.ESWriter._
 
-class RDDESWriterTest extends FunSuite with Matchers with WithElasticSearch {
+class RDDESWriterTest extends FunSuite with Matchers with ElasticSearch {
 
   val sc = new SparkContext(new SparkConf().setAppName("Test").setMaster("local[*]"))
   val esKey: ESClientKey = ESClientKey(Map(), ElasticsearchClientUri("localhost", 9400))
@@ -33,6 +34,11 @@ class RDDESWriterTest extends FunSuite with Matchers with WithElasticSearch {
     ) {
       Thread.sleep(100)
     }
+  }
+
+  override def afterAll() = {
+    super.afterAll()
+    sc.stop()
   }
 
   test("Save new documents") {

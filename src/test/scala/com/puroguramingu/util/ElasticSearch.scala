@@ -8,7 +8,7 @@ import org.elasticsearch.common.settings.Settings
 import org.elasticsearch.node.NodeBuilder
 import org.scalatest.{BeforeAndAfterAll, BeforeAndAfterEach, Suite}
 
-trait WithElasticSearch extends BeforeAndAfterEach with BeforeAndAfterAll {
+trait ElasticSearch extends BeforeAndAfterEach with BeforeAndAfterAll {
   this: Suite =>
 
   private val tempFile = File.createTempFile("elasticsearchtests", "tmp")
